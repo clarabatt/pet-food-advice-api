@@ -1,9 +1,8 @@
 import json
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import numpy as np
+
+from sklearn.metrics.pairwise import cosine_similarity
 
 def load_data(file_name):
     file_path = f'./{file_name}'
@@ -15,21 +14,10 @@ def generate_recommendations(preferences):
     dog_food_data = load_data('db-food.json')
 
     df = pd.DataFrame(dog_food_data)
-    print(df.head())
 
     clean_df = df.drop(['picture', 'name', 'brand', 'packageWeight_kg', 'packageWeight_lb', 'price', 'calories'], axis=1)
 
     df_encoded = pd.get_dummies(clean_df, columns=['breed', 'animalSize', 'lifeStage', 'condition'])
-
-    print(df_encoded.head())
-
-    X = df_encoded.drop('_id', axis=1)
-    y = df_encoded['_id']
-
-    clf = DecisionTreeClassifier()
-
-    from sklearn.metrics.pairwise import cosine_similarity
-    import numpy as np
 
     weights = {
         "breed": 1.0,
