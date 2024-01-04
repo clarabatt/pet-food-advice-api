@@ -52,10 +52,3 @@ def generate_recommendations(preferences):
     
     print(recommended_list)
     return recommended_list
-
-generate_recommendations({
-        "breed_German Shepherd": 1,
-        "animalSize_Large": 1,
-        "lifeStage_Senior": 1,
-        "condition_Joint Care": 1
-    })
