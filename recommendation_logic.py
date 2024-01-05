@@ -46,9 +46,8 @@ def generate_recommendations(preferences):
     index_list = np.argsort(similarities.flatten())[::-1]
     top_n = 3
     top_recommendations_indices = index_list[:top_n]
-
-    recommended_dog_foods = df.iloc[top_recommendations_indices]
-    recommended_list = recommended_dog_foods[['name', 'brand', 'animalSize']].values.tolist()
     
-    print(recommended_list)
+    recommended_dog_foods = df.iloc[top_recommendations_indices]
+    recommended_list = recommended_dog_foods[['name', 'brand', 'price', 'calories']].values.tolist()
+    
     return recommended_list
