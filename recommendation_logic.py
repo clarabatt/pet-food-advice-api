@@ -48,6 +48,6 @@ def generate_recommendations(preferences):
     top_recommendations_indices = index_list[:top_n]
     
     recommended_dog_foods = df.iloc[top_recommendations_indices]
-    recommended_list = recommended_dog_foods[['name', 'brand', 'price', 'calories']].values.tolist()
+    recommended_list = recommended_dog_foods[['name', 'brand', 'price', 'calories']].to_dict(orient='records')
     
     return recommended_list
