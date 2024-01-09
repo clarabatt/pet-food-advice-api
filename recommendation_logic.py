@@ -10,7 +10,16 @@ def load_data(file_name):
         data = json.load(file)
     return data
 
+def check_breed(breed):
+    dog_food_data = load_data('db-food.json')
+    df = pd.DataFrame(dog_food_data)
+    breeds_list = df['breed'].unique()
+    if breed not in breeds_list:
+        return False
+    return True
+
 def generate_recommendations(preferences):
+    print('Preferences ---> ', preferences)
     dog_food_data = load_data('db-food.json')
 
     df = pd.DataFrame(dog_food_data)
@@ -48,6 +57,6 @@ def generate_recommendations(preferences):
     top_recommendations_indices = index_list[:top_n]
     
     recommended_dog_foods = df.iloc[top_recommendations_indices]
-    recommended_list = recommended_dog_foods[['name', 'brand', 'price', 'calories']].to_dict(orient='records')
+    recommended_list = recommended_dog_foods.to_dict(orient='records')
     
     return recommended_list
