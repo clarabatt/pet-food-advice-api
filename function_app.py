@@ -1,7 +1,7 @@
 import json
 import azure.functions as func
 import logging
-from recommendation_logic import generate_recommendations
+from recommendation_logic import generate_recommendations, check_breed
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
@@ -15,11 +15,16 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
         age = data.get('age', None)
         conditions = data.get('conditions', [])
         
+        # Validate and formating breed
         if not isinstance(breed, str):
             return func.HttpResponse("Breed must be a string.", status_code=400)
         else:
-            breed = f"breed_{breed}"
-            
+            if check_breed(breed):
+                breed = f"breed_{breed}"
+            else:
+                breed = "breed_All"
+        
+        # Validate and formating animalWeight
         if not (isinstance(animalWeight, int) or isinstance(animalWeight, float)):
             return func.HttpResponse("Animal weight must be a number.", status_code=400)
         else:
@@ -34,6 +39,7 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
             else:
                 animalWeight = "animalSize_X-Small"
         
+        # Validate and formating age
         if not (isinstance(age, int) or isinstance(age, float)):
             return func.HttpResponse("Age must be a number.", status_code=400)  
         else:
@@ -43,17 +49,21 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
                 age = "lifeStage_Adult"
             else:
                 age = "lifeStage_Puppy"
+                
+        # Validate and formating conditions
         if not (isinstance(conditions, list) and all(isinstance(cond, str) for cond in conditions)):
             return func.HttpResponse("Conditions must be an array of strings.", status_code=400)
         else:
             conditions = [f"condition_{condition}" for condition in conditions]
         
+        # Mount user preferences
         user_preferences = {
             breed: 1,
             animalWeight: 1,
             age: 1
         }
         
+        # Complete user preferences with conditions
         user_preferences.update({condition: 1 for condition in conditions})
 
         recommendations = generate_recommendations(user_preferences)
