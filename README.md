@@ -49,13 +49,35 @@ This project contains an Azure Function that provides dog food recommendations b
 
 1. Clone the repository to your local machine.
 2. Navigate to the project directory.
-3. Start the function locally by running:
+3. Create a new virtual environment:
 
-   ```bash
-   func start
-   ```
+```bash
+python -m venv .venv
+```
 
-4. The function will be available at `http://localhost:7071/api/recommendation/dogs`.
+4. Activate the virtual environment:
+
+```bash
+# Windows
+.venv\Scripts\activate
+
+# Linux / MacOS
+source .venv/bin/activate
+```
+
+5. Install the dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+6. Start the function locally by running:
+
+```bash
+func start
+```
+
+7. The function will be available at `http://localhost:7071/api/recommendation/dogs`.
 
 ### Testing the Function
 
