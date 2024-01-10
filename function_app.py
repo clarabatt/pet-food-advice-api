@@ -66,8 +66,15 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
         # Complete user preferences with conditions
         user_preferences.update({condition: 1 for condition in conditions})
 
-        recommendations = generate_recommendations(user_preferences)
-        recommendations_json = json.dumps(recommendations, ensure_ascii=False)
+        try:
+            recommendations = generate_recommendations(user_preferences)
+            recommendations_json = json.dumps(recommendations, ensure_ascii=False)
+        except Exception as e:
+            logging.error(e)
+            return func.HttpResponse(
+                "Something went wrong getting recommendations.",
+                status_code=500
+            )
         
         return func.HttpResponse(recommendations_json, status_code=200, mimetype="application/json", 
             charset='utf-8')
