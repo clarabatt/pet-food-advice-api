@@ -44,11 +44,35 @@ def validate_format_age(age):
     return age
 
 def validate_format_conditions(conditions):
+    condition_mapping = {
+        'Food Allergy': 'Allergies or Food Sensitivities',
+        'Sensitive Stomach & Skin': 'Allergies or Food Sensitivities',
+        'Overweight': 'Overweight',
+        'Skin and Coat Health': 'Skin/Coat problems',
+        'Digestive Care': 'Digestive issues',
+        'Joint Care': 'Mobility concerns',
+        'Dental Care': 'Dental issues',
+    }
+    
+    recognized_conditions = ', '.join(set(condition_mapping.keys()).union(set(condition_mapping.values())))
+
     if not (isinstance(conditions, list) and all(isinstance(cond, str) for cond in conditions)):
-        return func.HttpResponse("Conditions must be an array of strings.", status_code=400)
-    else:
-        conditions = [f"condition_{condition}" for condition in conditions]
-    return conditions
+            return func.HttpResponse("Conditions must be an array of strings.", status_code=400)
+
+    formatted_conditions = []
+
+    for condition in conditions:
+        if condition in condition_mapping:
+            formatted_conditions.append(f"condition_{condition}")
+        elif condition in condition_mapping.values():
+            key = [k for k, v in condition_mapping.items() if v == condition][0]
+            formatted_conditions.append(f"condition_{key}")
+        else:
+            error_message = (f"The condition '{condition}' is not recognized. "
+                            f"Recognized conditions are: {recognized_conditions}.")
+            return func.HttpResponse(error_message, status_code=400)
+
+    return formatted_conditions
 
 @app.route(route="recommendation/dogs", methods=["POST"])
 def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
@@ -62,15 +86,23 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
         
         # Validate and formating breed
         breed = validate_format_breed(breed)
+        if isinstance(breed, func.HttpResponse):
+            return breed
         
         # Validate and formating animalWeight
         animalWeight = validate_format_animalWeight(animalWeight)
-        
+        if isinstance(animalWeight, func.HttpResponse):
+            return animalWeight
+
         # Validate and formating age
         age = validate_format_age(age)
+        if isinstance(age, func.HttpResponse):
+            return age
         
         # Validate and formating conditions
         conditions = validate_format_conditions(conditions)
+        if isinstance(conditions, func.HttpResponse):
+            return conditions
         
         # Mount user preferences dictionary
         user_preferences = {
