@@ -52,6 +52,7 @@ def validate_format_conditions(conditions):
         'Digestive Care': 'Digestive issues',
         'Joint Care': 'Mobility concerns',
         'Dental Care': 'Dental issues',
+        'Urinary Care': 'Urinary problems',
     }
     
     recognized_conditions = ', '.join(set(condition_mapping.keys()).union(set(condition_mapping.values())))
