@@ -19,7 +19,6 @@ def check_breed(breed):
     return True
 
 def generate_recommendations(preferences):
-    print('Preferences ---> ', preferences)
     dog_food_data = load_data('db-food.json')
 
     df = pd.DataFrame(dog_food_data)
