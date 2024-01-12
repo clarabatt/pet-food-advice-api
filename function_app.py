@@ -9,10 +9,8 @@ def validate_format_breed(breed):
     if not isinstance(breed, str):
         return func.HttpResponse("Breed must be a string.", status_code=400)
     else:
-        if check_breed(breed):
-            breed = f"breed_{breed}"
-        else:
-            breed = "breed_All"
+        if not check_breed(breed):
+            breed = None
     return breed
 
 def validate_format_animalWeight(animalWeight):
@@ -20,15 +18,15 @@ def validate_format_animalWeight(animalWeight):
         return func.HttpResponse("Animal weight must be a number.", status_code=400)
     else:
         if animalWeight >= 70:
-            animalWeight = "animalSize_Giant"
+            animalWeight = "Giant"
         elif animalWeight >= 50:
-            animalWeight = "animalSize_Large"
+            animalWeight = "Large"
         elif animalWeight >= 25:
-            animalWeight = "animalSize_Medium"
+            animalWeight = "Medium"
         elif animalWeight >= 12:
-            animalWeight = "animalSize_Small"
+            animalWeight = "Small"
         else:
-            animalWeight = "animalSize_X-Small"
+            animalWeight = "X-Small"
     return animalWeight
 
 def validate_format_age(age):
@@ -36,11 +34,11 @@ def validate_format_age(age):
         return func.HttpResponse("Age must be a number.", status_code=400)  
     else:
         if age >= 7:
-            age = "lifeStage_Senior"
+            age = "Senior"
         elif age >= 2:
-            age = "lifeStage_Adult"
+            age = "Adult"
         else:
-            age = "lifeStage_Puppy"
+            age = "Puppy"
     return age
 
 def validate_format_conditions(conditions):
@@ -60,20 +58,13 @@ def validate_format_conditions(conditions):
     if not (isinstance(conditions, list) and all(isinstance(cond, str) for cond in conditions)):
             return func.HttpResponse("Conditions must be an array of strings.", status_code=400)
 
-    formatted_conditions = []
-
     for condition in conditions:
-        if condition in condition_mapping:
-            formatted_conditions.append(f"condition_{condition}")
-        elif condition in condition_mapping.values():
-            key = [k for k, v in condition_mapping.items() if v == condition][0]
-            formatted_conditions.append(f"condition_{key}")
-        else:
+        if condition not in condition_mapping and condition not in condition_mapping.values():
             error_message = (f"The condition '{condition}' is not recognized. "
                             f"Recognized conditions are: {recognized_conditions}.")
             return func.HttpResponse(error_message, status_code=400)
 
-    return formatted_conditions
+    return conditions
 
 @app.route(route="recommendation/dogs", methods=["POST"])
 def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
@@ -105,18 +96,8 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
         if isinstance(conditions, func.HttpResponse):
             return conditions
         
-        # Mount user preferences dictionary
-        user_preferences = {
-            breed: 1,
-            animalWeight: 1,
-            age: 1
-        }
-        
-        # Complete user preferences with conditions
-        user_preferences.update({condition: 1 for condition in conditions})
-
         try:
-            recommendations = generate_recommendations(user_preferences)
+            recommendations = generate_recommendations(breed, animalWeight, age, conditions)
             recommendations_json = json.dumps(recommendations, ensure_ascii=False)
         except Exception as e:
             logging.error(e)
