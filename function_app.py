@@ -11,7 +11,7 @@ def validate_format_breed(breed):
         return func.HttpResponse("Breed must be a string.", status_code=400)
     else:
         if not check_if_breed_exists(breed):
-            breed = None
+            breed = "All"
     return breed
 
 
@@ -47,19 +47,22 @@ def validate_format_age(age):
 
 def validate_format_conditions(conditions):
     condition_mapping = {
-        "Food Allergy": "Allergies or Food Sensitivities",
-        "Sensitive Stomach & Skin": "Allergies or Food Sensitivities",
-        "Overweight": "Overweight",
-        "Skin and Coat Health": "Skin/Coat problems",
-        "Digestive Care": "Digestive issues",
-        "Joint Care": "Mobility concerns",
-        "Dental Care": "Dental issues",
-        "Urinary Care": "Urinary problems",
+        "Allergies or Food Sensitivities": ["Food Allergy", "Sensitive Stomach & Skin"],
+        "Food Allergy": ["Food Allergy", "Sensitive Stomach & Skin"],
+        "Sensitive Stomach & Skin": ["Food Allergy", "Sensitive Stomach & Skin"],
+        "Overweight": ["Overweight"],
+        "Skin and Coat Health": ["Skin/Coat problems", "Sensitive Stomach & Skin"],
+        "Skin/Coat problems": ["Skin/Coat problems", "Sensitive Stomach & Skin"],
+        "Sensitive Stomach & Skin": ["Skin/Coat problems", "Sensitive Stomach & Skin"],
+        "Digestive issues": ["Digestive Care"],
+        "Digestive Care": ["Digestive Care"],
+        "Mobility concerns": ["Joint Care"],
+        "Joint Care": ["Joint Care"],
+        "Dental issues": ["Dental Care"],
+        "Dental Care": ["Dental Care"],
+        "Urinary problems": ["Urinary Care"],
+        "Urinary Care": ["Urinary Care"],
     }
-
-    recognized_conditions = ", ".join(
-        set(condition_mapping.keys()).union(set(condition_mapping.values()))
-    )
 
     if not (
         isinstance(conditions, list)
@@ -69,18 +72,19 @@ def validate_format_conditions(conditions):
             "Conditions must be an array of strings.", status_code=400
         )
 
+    formatted_conditions = []
+
     for condition in conditions:
-        if (
-            condition not in condition_mapping
-            and condition not in condition_mapping.values()
-        ):
+        if condition not in condition_mapping:
             error_message = (
                 f"The condition '{condition}' is not recognized. "
-                f"Recognized conditions are: {recognized_conditions}."
+                f"Recognized conditions are: {condition_mapping.keys()}."
             )
             return func.HttpResponse(error_message, status_code=400)
+        else:
+            formatted_conditions.extend(condition_mapping[condition])
 
-    return conditions
+    return formatted_conditions
 
 
 @app.route(route="recommendation/dogs", methods=["POST"])
@@ -116,9 +120,11 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
             recommendations = get_food_recommendations(
                 breed, animalWeight, age, conditions
             )
+
             top_recommendations = rank_products(
                 recommendations, conditions, animalWeight, age, breed
             )[:3]
+
             top_recommendations_dict = [
                 dog_food.to_dict() for dog_food in top_recommendations
             ]
