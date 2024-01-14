@@ -1,7 +1,7 @@
 import json
 import azure.functions as func
 import logging
-from dog_food import get_food_recommendations, check_if_breed_exists
+from dog_food import get_food_recommendations, check_if_breed_exists, rank_products
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
@@ -116,7 +116,15 @@ def recommendation_logic(req: func.HttpRequest) -> func.HttpResponse:
             recommendations = get_food_recommendations(
                 breed, animalWeight, age, conditions
             )
-            recommendations_json = json.dumps(recommendations, ensure_ascii=False)
+            top_recommendations = rank_products(
+                recommendations, conditions, animalWeight, age, breed
+            )[:3]
+            top_recommendations_dict = [
+                dog_food.to_dict() for dog_food in top_recommendations
+            ]
+            recommendations_json = json.dumps(
+                top_recommendations_dict, ensure_ascii=False
+            )
         except Exception as e:
             logging.error(e)
             return func.HttpResponse(

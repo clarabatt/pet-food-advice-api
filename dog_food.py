@@ -81,6 +81,31 @@ def get_food_recommendations(breed, size, life_stage, health_conditions):
         )
 
         if breed_match and size_match and life_stage_match and health_condition_match:
-            recommended_foods.append(food.to_dict())
+            recommended_foods.append(food)
 
+    return recommended_foods
+
+
+def rank_products(recommended_foods, health_conditions, size, life_stage, breed):
+    if not isinstance(health_conditions, list):
+        health_conditions = [health_conditions] if health_conditions else []
+
+    for food in recommended_foods:
+        food.score = 0
+
+        if (food.condition is None and not health_conditions) or (
+            food.condition is not None and food.condition in health_conditions
+        ):
+            food.score += 3
+
+        if food.animalSize == size or food.lifeStage == life_stage:
+            food.score += 2
+
+        if food.breed == breed:
+            food.score += 1
+
+        if food.breed == "All":
+            food.score += 0.5
+
+    recommended_foods.sort(key=lambda food: food.score, reverse=True)
     return recommended_foods
